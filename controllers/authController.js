@@ -24,7 +24,7 @@ export const signup = async (req, res) => {
       expiresIn: '24h',
     });
 
-    res.status(201).json({ token, userId: user._id, workspaceId: workspace._id, username: user.username });
+    res.status(201).json({ token: generatedToken, userId: user._id, workspaceId: workspace._id, username: user.username });
   } catch (error) {
     res.status(500).json({ message: 'Error creating user', error: error.message });
   }
