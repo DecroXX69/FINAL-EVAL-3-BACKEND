@@ -1,6 +1,6 @@
 import express from 'express';
 import workspaceController from '../controllers/workspaceController.js'; // Make sure this is an ES module export
-import authMiddleware from '../middleware/auth.js'; // Ensure authMiddleware is also exported as an ES module
+import authMiddleware from '../middlewares/auth.js'; // Ensure authMiddleware is also exported as an ES module
 
 const router = express.Router();
 
@@ -32,7 +32,6 @@ router.delete('/:workspaceId/formbot/:formbotId', authMiddleware, workspaceContr
 router.post('/:workspaceId/folder/:folderId/addFormbot', authMiddleware, workspaceController.addFormbotToFolder);
 
 // Share workspace link
-router.post('/:workspaceId/sharelink', authMiddleware, workspaceController.shareWorkspace);
-
+router.post('/:workspaceId/sharelink', authMiddleware, workspaceController.addSharedWorkspaceByLink);
 // Export router as default
 export default router;

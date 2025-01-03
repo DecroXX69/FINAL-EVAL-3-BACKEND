@@ -1,5 +1,5 @@
 import express from 'express';
-import auth from '../middleware/auth.js'; // Ensure the auth middleware is an ES module
+import auth from '../middlewares/auth.js'; // Ensure the auth middleware is an ES module
 import formElementController from '../controllers/formElementController.js'; // Ensure the controller uses ES module syntax
 
 const router = express.Router();

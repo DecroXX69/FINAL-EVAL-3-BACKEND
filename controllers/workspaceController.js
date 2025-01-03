@@ -64,6 +64,9 @@ const workspaceController = {
     }
   },
 
+
+
+
   getWorkspacesForUser: async (req, res) => {
     try {
       console.log('Workspace route hit! Received workspaceId:');
@@ -298,11 +301,11 @@ const workspaceController = {
       res.status(500).json({ message: 'Error adding formbot to folder', error: error.message });
     }
   },
-
+  
   // Share workspace with another user
   shareWorkspace: async (req, res) => {
     const { workspaceId } = req.params;
-    const { username } = req.body;
+    const { email,permissions,username } = req.body;
   
     try {
       const workspace = await Workspace.findById(workspaceId);
@@ -311,7 +314,8 @@ const workspaceController = {
         return res.status(404).json({ message: 'Workspace not found' });
       }
   
-      const userToShareWith = await User.findOne({ username });
+      const userToShareWith = await User.findOne({ email });
+         // Select additional fields
   
       if (!userToShareWith) {
         return res.status(404).json({ message: 'User not found' });
@@ -321,12 +325,74 @@ const workspaceController = {
         return res.status(400).json({ message: 'Workspace already shared with this user' });
       }
   
-      workspace.sharedWith.push({ userId: userToShareWith._id });
+      workspace.sharedWith.push({
+        userId: userToShareWith._id,
+        username: username,
+        email: email,
+        permissions:permissions
+      });
+      
       await workspace.save();
   
-      res.status(200).json({ message: `Workspace shared with ${username}` });
+      // Return populated workspace
+      const populatedWorkspace = await Workspace.findById(workspaceId)
+        .populate('owner', 'username')
+        .populate('sharedWith.userId', 'username email');
+  
+      res.status(200).json(populatedWorkspace);
     } catch (error) {
       res.status(500).json({ message: 'Error sharing workspace', error: error.message });
+    }
+  },
+
+  addSharedWorkspaceByLink: async (req, res) => {
+    const { workspaceId } = req.params;
+    const { UserId, permissions } = req.body;
+  
+    try {
+      const workspace = await Workspace.findById(workspaceId);
+  
+      if (!workspace) {
+        return res.status(404).json({ message: 'Workspace not found' });
+      }
+  
+      const userToShareWith = await User.findById(UserId);
+  
+      if (!userToShareWith) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+  
+      // Check if workspace is already shared with this user
+      const existingShare = workspace.sharedWith.find(
+        shared => shared.userId.toString() === UserId
+      );
+  
+      if (existingShare) {
+        // Update permissions if already shared
+        existingShare.permissions = permissions.toLowerCase();
+      } else {
+        // Add new share with lowercase permissions
+        workspace.sharedWith.push({
+          userId: UserId,
+          username: userToShareWith.username,
+          email: userToShareWith.email,
+          permissions: permissions.toLowerCase()
+        });
+      }
+  
+      await workspace.save();
+  
+      const populatedWorkspace = await Workspace.findById(workspaceId)
+        .populate('owner', 'username')
+        .populate('sharedWith.userId', 'username email');
+  
+      res.status(200).json(populatedWorkspace);
+    } catch (error) {
+      console.error('Error in addSharedWorkspaceByLink:', error);
+      res.status(500).json({ 
+        message: 'Error sharing workspace', 
+        error: error.message 
+      });
     }
   }
 };

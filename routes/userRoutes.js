@@ -1,5 +1,5 @@
 import express from 'express';
-import authMiddleware from '../middleware/auth.js'; // Ensure the file is an ES module
+import authMiddleware from '../middlewares/auth.js'; // Ensure the file is an ES module
 import userController from '../controllers/userController.js'; // Make sure userController uses ES module syntax
 
 const router = express.Router();
